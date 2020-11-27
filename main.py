@@ -19,6 +19,7 @@ import pyrealsense2 as d435
 
 from lib.TCPHandler import MyTCPHandler
 from lib.tools import Pixelate, Phosephene
+from model.HED import CropLayer
 from cfg import exp_cfg
 
 
@@ -36,6 +37,13 @@ config.enable_stream(d435.stream.color, 640, 480, d435.format.bgr8, 30)
 pix_h, pix_w = exp_cfg["pixSize"]
 H, W = exp_cfg["imgShape"]
 strength = exp_cfg["Strength"]
+
+#! [Register]
+cv2.dnn_registerLayer('Crop', CropLayer)
+#! [Register]
+
+# Load the model 
+net = cv2.dnn.readNet(cv2.samples.findFile(exp_cfg["prototxt"]), cv2.samples.findFile(exp_cfg["hed_pretrained"]))
 
 
 
@@ -80,11 +88,24 @@ def D435(queue):
             depth = cv2.cvtColor(depth_colormap,  cv2.COLOR_BGR2GRAY)
             
             gray = cv2.resize(gray, (W, H), interpolation=cv2.INTER_NEAREST )
+            rgb  = cv2.resize(color_image, (W, H), interpolation=cv2.INTER_NEAREST )
             depth = cv2.resize(depth , (W, H), interpolation=cv2.INTER_NEAREST )
 
 
             cv2.imshow("gray", gray)
             cv2.imshow("depth", depth)
+
+
+            """HED
+            """
+            inp = cv2.dnn.blobFromImage(rgb , scalefactor=1.0, size=(W, H),
+                               mean=(104.00698793, 116.66876762, 122.67891434),
+                               swapRB=False, crop=False)
+
+            net.setInput(inp)                               
+            out = net.forward() 
+            out = out[0, 0]
+            cv2.imshow("HED", out)
 
             
 
@@ -93,7 +114,8 @@ def D435(queue):
             pixSize = (pix_h, pix_w )
             pixelated_gray = Pixelate(gray , *pixSize)
             pixelated_depth = Pixelate(depth , *pixSize)
-            
+            pixelated_HED = Pixelate(out , *pixSize)
+            cv2.imshow("pixelated_HED", pixelated_HED )
           
             
 
@@ -101,8 +123,10 @@ def D435(queue):
             """
             phosephene_gray = Phosephene(pixelated_gray, H, pix_h, strength=strength )
             phosephene_depth = Phosephene(pixelated_depth, H, pix_h, strength=strength)
+            phosephene_HED = Phosephene(pixelated_HED*255  , H, pix_h, strength=strength)
             
-        
+
+            cv2.imshow("phosephene_HED", phosephene_HED )
 
 
             # _Encoding 
@@ -125,7 +149,7 @@ def D435(queue):
 
 
             # __ Image show             
-            images1 = np.hstack((pixelated_gray, pixelated_depth)) # stack both images horizontally            
+            images1 = np.hstack((pixelated_gray, pixelated_depth )) # stack both images horizontally            
             images2 = np.hstack((phosephene_gray , phosephene_depth)) 
             images = np.vstack((images1, images2))
             
