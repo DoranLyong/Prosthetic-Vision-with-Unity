@@ -16,9 +16,11 @@ import cv2
 import numpy as np 
 from scipy import signal
 import pyrealsense2 as d435
+import skimage.measure 
+
 
 from lib.TCPHandler import MyTCPHandler
-from lib.tools import Pixelate, Phosephene
+from lib.tools import Pixelate, Phosephene, Phosephene32
 from model.HED import CropLayer
 from cfg import exp_cfg
 
@@ -98,35 +100,63 @@ def D435(queue):
 
             """HED
             """
-            inp = cv2.dnn.blobFromImage(rgb , scalefactor=1.0, size=(W, H),
-                               mean=(104.00698793, 116.66876762, 122.67891434),
-                               swapRB=False, crop=False)
+#            inp = cv2.dnn.blobFromImage(rgb , scalefactor=1.0, size=(W, H),
+#                               mean=(104.00698793, 116.66876762, 122.67891434),
+#                               swapRB=False, crop=False)
+#
+#            net.setInput(inp)                               
+#            out = net.forward() 
+#            out = out[0, 0]
+#            cv2.imshow("HED", out)
 
-            net.setInput(inp)                               
-            out = net.forward() 
-            out = out[0, 0]
-            cv2.imshow("HED", out)
-
-            
+            """Canny
+            """
+            canny = cv2.Canny(gray,50, 255)
+            cv2.imshow("canny", canny)
+            cv2.imwrite('./canny.bmp',  canny)
 
             """ Pixelate image 
             """           
             pixSize = (pix_h, pix_w )
             pixelated_gray = Pixelate(gray , *pixSize)
             pixelated_depth = Pixelate(depth , *pixSize)
-            pixelated_HED = Pixelate(out , *pixSize)
-            cv2.imshow("pixelated_HED", pixelated_HED )
-          
+#            pixelated_HED = Pixelate(out , *pixSize)
+            pixelated_canny = Pixelate(canny, *pixSize)
+
             
+            
+          
+#            ret, pixelated_canny = cv2.threshold(pixelated_canny,1,255, cv2.THRESH_BINARY)
+#            ret2, pixelated_HED = cv2.threshold(pixelated_HED*255,200,255, cv2.THRESH_BINARY)
+            
+
+            cv2.imwrite('./pix_canny.bmp', pixelated_canny)
+
+            cv2.imshow("pixelated_canny", pixelated_canny)       
+#            cv2.imshow("pixelated_HED", pixelated_HED )     
 
             """ Phosephene image 
             """
             phosephene_gray = Phosephene(pixelated_gray, H, pix_h, strength=strength )
             phosephene_depth = Phosephene(pixelated_depth, H, pix_h, strength=strength)
-            phosephene_HED = Phosephene(pixelated_HED*255  , H, pix_h, strength=strength)
+            phosephene_canny = Phosephene(pixelated_canny, H, pix_h, strength=strength)
+#            phosephene_HED = Phosephene(pixelated_HED*255  , H, pix_h, strength=strength)
             
+            cv2.imshow("phosephene_canny", phosephene_canny )
 
-            cv2.imshow("phosephene_HED", phosephene_HED )
+#            cv2.imshow("phosephene_HED", phosephene_HED )
+
+
+            gray_32 = skimage.measure.block_reduce(gray, (20, 20), np.max)
+            canny_32 = cv2.Canny(gray_32 ,50, 255)
+            cv2.imshow("gray_32",gray_32 )
+            cv2.imshow("canny_32", canny_32)
+            
+            phosephene_32 = Phosephene32(canny_32, H, pix_h, strength=strength )
+            print(phosephene_32.shape)
+            cv2.imshow("Phosephene_32", phosephene_32 )
+
+
 
 
             # _Encoding 
