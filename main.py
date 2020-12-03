@@ -177,10 +177,14 @@ def D435(queue):
 #
 
 #           
-#            # _Encoding 
-#            target_frame = phosephene_depth
+#            # _Encoding for TCP 
+            zero_pad = np.pad(phosephene_canny, [(0,), (80,)], mode='constant')  # (480, 480) -> (480, 640) for showing in unity
+                                                                                     # 480 + 2*x = 640 => x = 80
+            cv2.imshow("zero_padding (480, 640) for Unity", zero_pad)
+
+            target_frame = zero_pad
 #            
-#            #print(target_frame.shape)
+
 #            
 #
 #            encode_param = [int(cv2.IMWRITE_JPEG_QUALITY),80]  # 0 ~ 100 quality 
