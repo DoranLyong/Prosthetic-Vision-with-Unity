@@ -161,7 +161,7 @@ def D435(queue):
             canny = cv2.Canny(gray, 80, 200)
 #            canny = cv2.Laplacian(gray, cv2.CV_8U,ksize=5 )
 
-            cv2.imwrite('./canny.bmp',  canny)
+#            cv2.imwrite('./canny.bmp',  canny)
 
 
             gray_depth_canny = np.hstack((gray, depth, canny))
@@ -194,7 +194,7 @@ def D435(queue):
 #            ret2, pixelated_HED = cv2.threshold(pixelated_HED*255,200,255, cv2.THRESH_BINARY)
 #            cv2.imshow("pixelated_HED", pixelated_HED )     
             
-            cv2.imwrite('./pix_edge.bmp', pixelated_canny)
+#            cv2.imwrite('./pix_edge.bmp', pixelated_canny)
             
             pixelated_gray_depth_canny = np.hstack((pixelated_gray, pixelated_depth, pixelated_canny ))
             cv2.imshow("pixelated_gray_depth_edge", pixelated_gray_depth_canny)       
