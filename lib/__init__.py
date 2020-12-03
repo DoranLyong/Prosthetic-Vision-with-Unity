@@ -1,1 +1,1 @@
-__all__ = ['MyTCPHandler']
+__all__ = ['MyTCPHandler', "non_max_suppression_fast"]
