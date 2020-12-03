@@ -1,5 +1,6 @@
 import argparse
 import os.path as osp 
+from collections import OrderedDict
 
 
 
@@ -27,7 +28,7 @@ def argument_parser():
     ap.add_argument("-pb", "--pb", type=str, default=osp.join(ws_dir, 'model', 'mobilenet_ssd', 'frozen_inference_graph.pb'),
                  help="path to Caffe pre-trained model")
 
-    ap.add_argument('-c', "--confidence", type=float, default=0.55
+    ap.add_argument('-c', "--confidence", type=float, default=0.45
                 ,help="minimum probability to filter weak detections")
 
 
@@ -44,10 +45,16 @@ def SSD_classes():
 #	"bottle", "bus", "car", "cat", "chair", "cow", "diningtable",
 #	"dog", "horse", "motorbike", "person", "pottedplant", "sheep",
 #	"sofa", "train", "tvmonitor"]    
-
-
-    CLASSES = list(range(90))
-    CLASSES.insert(47,"cup")
+    
+    CLASSES = OrderedDict()  # https://www.daleseo.com/python-collections-ordered-dict/
+    
+    """
+    (ref): https://stackoverflow.com/questions/4803999/how-to-convert-a-file-into-a-dictionary
+    """
+    with open("coco_labels.txt") as f: 
+        for line in f: 
+            key, val = line.split()        
+            CLASSES[int(key)] = val
 
 
     return CLASSES

@@ -64,6 +64,7 @@ args = vars(ap.parse_args())
 SSD_net = cv2.dnn.readNetFromTensorflow(args["pb"], args["pbtxt"])
 CLASSES = SSD_classes()
 
+
 totalFrames = 0 
 
 key_press = ord('q')
@@ -127,8 +128,10 @@ def D435(queue):
                     if confidence > args["confidence"]:
                         idx = int(detections[0, 0, i, 1])
 
-#                        if CLASSES[idx] != "cup":
-#                            continue
+                        if CLASSES[idx] not in ["cup", "knife", "bottle", "backpack", "keyboard", 
+                                                "book", "cell_phone", "person", "laptop" ] :
+                            continue
+
 
                         box = detections[0, 0, i, 3:7] * np.array([480, 480 ,480, 480]) # (W, H) = (480,480)
                         (x1, y1, x2, y2) = box.astype("int")
@@ -142,10 +145,10 @@ def D435(queue):
             masks = [] 
             for (x_start, y_start, x_end, y_end) in pick: 
                 cv2.rectangle(rgb_480, (x_start, y_start), (x_end, y_end), (0,255,255), thickness=2, lineType=cv2.LINE_8)
-                mask_temp[x_start:x_end, y_start:y_end] = 1 
+                mask_temp[y_start:y_end, x_start:x_end] = 1 
 
 
-#            cv2.imshow("SSD_mobile", rgb_480)
+            cv2.imshow("SSD_mobile", rgb_480)
             gray = gray * mask_temp
 #            depth = depth * mask_temp
 #            cv2.imshow("mask", gray)
@@ -153,19 +156,21 @@ def D435(queue):
 
 
 
-            """Canny
+            """Edge - Canny
             """
-            canny = cv2.Canny(gray, 80, 255)
+            canny = cv2.Canny(gray, 80, 200)
+#            canny = cv2.Laplacian(gray, cv2.CV_8U,ksize=5 )
+
             cv2.imwrite('./canny.bmp',  canny)
 
 
             gray_depth_canny = np.hstack((gray, depth, canny))
             
-            cv2.namedWindow("gray + depth_gray + canny", cv2.WINDOW_AUTOSIZE)
-            cv2.imshow("gray + depth_gray + canny", gray_depth_canny)
+            cv2.namedWindow("gray + depth_gray + edge", cv2.WINDOW_AUTOSIZE)
+            cv2.imshow("gray + depth_gray + edge", gray_depth_canny)
 
 
-            """HED
+            """Edge - HED
             """
 #            inp = cv2.dnn.blobFromImage(rgb , scalefactor=1.0, size=(W, H),
 #                               mean=(104.00698793, 116.66876762, 122.67891434),
@@ -182,17 +187,17 @@ def D435(queue):
             pixSize = (pix_h, pix_w)
             pixelated_gray = Pixelate(gray , *pixSize)
             pixelated_depth = Pixelate(depth , *pixSize)
-            pixelated_canny = Pixelate(canny, *pixSize)
+            pixelated_canny = Pixelate(canny , *pixSize)
 #            pixelated_HED = Pixelate(out , *pixSize)
 
                       
 #            ret2, pixelated_HED = cv2.threshold(pixelated_HED*255,200,255, cv2.THRESH_BINARY)
 #            cv2.imshow("pixelated_HED", pixelated_HED )     
             
-            cv2.imwrite('./pix_canny.bmp', pixelated_canny)
+            cv2.imwrite('./pix_edge.bmp', pixelated_canny)
             
             pixelated_gray_depth_canny = np.hstack((pixelated_gray, pixelated_depth, pixelated_canny ))
-            cv2.imshow("pixelated_gray_depth_canny", pixelated_gray_depth_canny)       
+            cv2.imshow("pixelated_gray_depth_edge", pixelated_gray_depth_canny)       
 
 
 
@@ -216,7 +221,8 @@ def D435(queue):
 
             gray_32 = skimage.measure.block_reduce(gray, (scale, scale), np.max) # MaxPooling  (480,480) -> (32,32)
             depth_32 = skimage.measure.block_reduce(depth, (scale, scale), np.max) # MaxPooling  (480,480) -> (32,32)
-            canny_32 = cv2.Canny(gray_32 ,50, 255)
+#            canny_32= cv2.Laplacian(gray_32, cv2.CV_8U,ksize=5 )
+            canny_32 = cv2.Canny(gray_32 ,80, 255)
 
             MaxPool_32 = np.hstack((gray_32, depth_32, canny_32))
             cv2.namedWindow("MaxPool_32", cv2.WINDOW_AUTOSIZE)
@@ -250,8 +256,8 @@ def D435(queue):
 
              
 
-            target = {ord('q'): gray, ord('w'):pixelated_gray  ,ord('e'): phosephene_gray, ord('r'): phosephene_gray_32,
-                      ord('a'): depth, ord('s'): pixelated_depth , ord('d'): phosephene_depth, ord('f'): phosephene_depth_32,
+            target = {ord('q'): gray, ord('w'):pixelated_gray  ,ord('e'): phosephene_gray, ord('r'): phosephene_gray_32, ord('1'): cv2.cvtColor(rgb_480 , cv2.COLOR_BGR2GRAY),
+                      ord('a'): depth, ord('s'): pixelated_depth , ord('d'): phosephene_depth, ord('f'): phosephene_depth_32, 
                       ord('z'): canny, ord('x'): pixelated_canny, ord('c'): phosephene_canny, ord('v'): phosephene_canny_32
              }
             
