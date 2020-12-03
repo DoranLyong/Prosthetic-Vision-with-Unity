@@ -14,7 +14,8 @@ def Pixelate( image, pix_w, pix_h):
     
 #    out_temp = cv2.resize(image, (pix_w, pix_h), interpolation=cv2.INTER_CUBIC) # downsample 
 
-    out_temp = skimage.measure.block_reduce(image, (scale, scale), np.max)
+    out_temp = skimage.measure.block_reduce(image, (scale, scale), np.max)  # MaxPooling 
+
     
     output = cv2.resize(out_temp, (W, H), interpolation=cv2.INTER_NEAREST ) # upsample 
 
@@ -22,7 +23,11 @@ def Pixelate( image, pix_w, pix_h):
 
 
 
-def Phosephene(image, imgShape, pixShape, strength=7):
+def Phosephene(image, imgShape, pixShape, strength=3):
+    """
+    Origi -> pixeltated -> Phosephene  
+    """
+
     faceSize = int(imgShape / pixShape)
     
     kernel = gkern(faceSize, std=strength)
@@ -41,15 +46,15 @@ def Phosephene(image, imgShape, pixShape, strength=7):
     return phosephene_img
 
 
-def Phosephene32(img, imgShape ,pixShape, strength=7):
+def Phosephene32(img, imgShape ,pixShape, strength=3):
     """
-    Origi -> maxPool32 -> Canny -> Phosephene -> Resize 640x640
+    Origi -> maxPool_32 ->  Phosephene -> Resize 480x480
     """
 
     H, W = img.shape 
     faceSize = int(imgShape / pixShape)
     
-    phosephene_face = np.zeros((imgShape,imgShape), dtype=float)
+    phosephene_face = np.zeros((imgShape,imgShape), dtype=float)  # zero_templete 
     kernel = gkern(faceSize, std=strength)
     
     for j in range(H):
@@ -59,6 +64,7 @@ def Phosephene32(img, imgShape ,pixShape, strength=7):
             phosephene_temp =(temp * kernel).astype('uint8')
             phosephene_face[j*faceSize:j*faceSize+faceSize, i*faceSize:i*faceSize+faceSize] = phosephene_temp
 
+    
     return  phosephene_face
 
 
