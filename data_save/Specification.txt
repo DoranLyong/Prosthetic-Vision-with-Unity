@@ -1,0 +1,45 @@
+카메라: intel D435 
+입력이미지: (high, width) = (480, 640)  
+    → D435의 특성에 따라 고정돼서 들어옴. 
+
+
+[전처리] 
+1. 이미지 정중앙에 맞게 잘라서(cropped) (480,480)으로 리사이즈(resize). 
+    → reshape으로 (640,640)으로 맞추면 영상에 왜곡이 생기기 때문. 
+
+
+2. 리소스 이미지 
+   → gray_scale , depth, canny_edge 이미지 3 가지를 준비 
+   → 아래 pixelated, phosephene 을 적용함. 
+
+
+3. Pixelate (픽셀화) 
+    → 픽셀 개수는 480의 공배수로 구성할 수 있음 
+        └ (8x8) (16x16) (32x32) ...  ≤ (480x480)
+
+
+4. Phosephene 
+   → 픽셀화된(pixelated) 한 셀(cell) 만큼 정규 분포를 구성함 
+   → elementwise 연산 
+   → 편차(standard deviation) 조절 가능 - [0, ∞) 
+   → gray_img ⇒ pixelated ⇒ phosephene 순으로 생성 
+
+
+5. Phosephene32  
+   → gray_img ⇒ MaxPool_32  ⇒  Phosephene ⇒ Upsampling 480x480
+
+
+※ 사용 가능한 파라미터 = {Pixelate size, Phosephene strength, MaxPool_kernel}
+   
+
+[후처리] 
+- Object detection, Instance segmentation 기능 등으로 원하는 객체만 인식 
+
+
+
+
+
+    
+   
+
+

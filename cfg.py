@@ -1,7 +1,7 @@
 exp_cfg = {
     "imgShape" : (480, 480),
     "pixSize" : (48, 48), 
-    "Strength" : 1,
+    "Strength" : 0.8,
     "hed_pretrained" : "./model/data/hed_pretrained_bsds.caffemodel",
     "prototxt" : "./model/data/deploy.prototxt"
 }

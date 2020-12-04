@@ -23,7 +23,7 @@ def Pixelate( image, pix_w, pix_h):
 
 
 
-def Phosephene(image, imgShape, pixShape, strength=3):
+def Phosephene(image, imgShape, pixShape, strength=1):
     """
     Origi -> pixeltated -> Phosephene  
     """
@@ -46,9 +46,9 @@ def Phosephene(image, imgShape, pixShape, strength=3):
     return phosephene_img
 
 
-def Phosephene32(img, imgShape ,pixShape, strength=3):
+def Phosephene32(img, imgShape ,pixShape, strength=1):
     """
-    Origi -> maxPool_32 ->  Phosephene -> Resize 480x480
+    Origi -> maxPool_32 ->  Phosephene -> Upsampling 480x480
     """
 
     H, W = img.shape 

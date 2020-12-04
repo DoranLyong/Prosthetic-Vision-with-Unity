@@ -27,7 +27,6 @@ import pyrealsense2 as d435
 import skimage.measure 
 
 
-from lib.TCPHandler import MyTCPHandler
 from lib.tools import Pixelate, Phosephene, Phosephene32
 from model.HED import CropLayer
 from cfg import exp_cfg
@@ -68,11 +67,15 @@ CLASSES = SSD_classes()
 totalFrames = 0 
 
 key_press = ord('q')
+detection_mode = True
+
+
+title = "32x32_with_std=1"
 
 
 # _ D435 process 
 def D435(queue):
-    global key_press
+    global key_press, detection_mode
     
     print("D435 processing", end="\n ")
     pipeline.start(config) # _Start streaming
@@ -149,10 +152,6 @@ def D435(queue):
 
 
             cv2.imshow("SSD_mobile", rgb_480)
-#            gray = gray * mask_temp
-#            depth = depth * mask_temp
-#            cv2.imshow("mask", gray)
-
 
 
 
@@ -166,8 +165,8 @@ def D435(queue):
 
             gray_depth_canny = np.hstack((gray, depth, canny))
             
-            cv2.namedWindow("gray + depth_gray + edge", cv2.WINDOW_AUTOSIZE)
-            cv2.imshow("gray + depth_gray + edge", gray_depth_canny)
+            cv2.namedWindow("gray_depth_edge", cv2.WINDOW_AUTOSIZE)
+            cv2.imshow("gray_depth_edge", gray_depth_canny)
 
 
             """Edge - HED
@@ -197,7 +196,9 @@ def D435(queue):
 #            cv2.imwrite('./pix_edge.bmp', pixelated_canny)
             
             pixelated_gray_depth_canny = np.hstack((pixelated_gray, pixelated_depth, pixelated_canny ))
-            cv2.imshow("pixelated_gray_depth_edge", pixelated_gray_depth_canny)       
+#            cv2.imshow("pixelated_gray_depth_edge", pixelated_gray_depth_canny)       
+
+
 
 
 
@@ -209,7 +210,9 @@ def D435(queue):
 ##            phosephene_HED = Phosephene(pixelated_HED*255  , H, pix_h, strength=strength)
 
             phosephenes = np.hstack((phosephene_gray, phosephene_depth, phosephene_canny ))                       
-            cv2.imshow("phosephens_from_480", phosephenes)
+#            cv2.imshow("phosephens_from_480", phosephenes)
+
+
 #
 ##            cv2.imshow("phosephene_HED", phosephene_HED )
 #
@@ -234,9 +237,9 @@ def D435(queue):
             phosephene_canny_32 = Phosephene32(canny_32, H, pix_h, strength=strength )
 
             phosephenes_32 = np.hstack((phosephene_gray_32, phosephene_depth_32, phosephene_canny_32))
-            cv2.imshow("phosephenes_32", phosephenes_32)
+#            cv2.imshow("phosephenes_32", phosephenes_32)
 
-
+            
 
 
             key = cv2.waitKey(1)        
@@ -253,12 +256,24 @@ def D435(queue):
             else: 
                 key_press = key 
 
+                if key == ord('2') : 
+                    print("Normal mode...")  # no detection cast 
+                    detection_mode = True 
 
-            if False: 
-                cast = mask_temp
+                elif key == ord('3') :   # If you press '2' key 
+                    print("Detection cast...")
+                    detection_mode = False    # detection cast 
+                
+
+
+            if detection_mode : 
+                cast = np.ones_like(mask_temp).astype('uint8')  # no-detection cast 
+                
             else: 
-                cast = np.ones_like(mask_temp).astype('uint8')
-             
+                cast = mask_temp   # detection cast 
+
+
+
 
             target = {ord('q'): gray*cast , ord('w'):pixelated_gray*cast   ,ord('e'): phosephene_gray*cast , ord('r'): phosephene_gray_32*cast , ord('1'): cv2.cvtColor(rgb_480 , cv2.COLOR_BGR2GRAY),
                       ord('a'): depth*cast , ord('s'): pixelated_depth*cast  , ord('d'): phosephene_depth*cast , ord('f'): phosephene_depth_32*cast , 
