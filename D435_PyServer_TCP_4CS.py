@@ -149,7 +149,7 @@ def D435(queue):
 
 
             cv2.imshow("SSD_mobile", rgb_480)
-            gray = gray * mask_temp
+#            gray = gray * mask_temp
 #            depth = depth * mask_temp
 #            cv2.imshow("mask", gray)
 
@@ -251,16 +251,22 @@ def D435(queue):
                 pass 
 
             else: 
-                key_press = key
+                key_press = key 
 
 
+            if False: 
+                cast = mask_temp
+            else: 
+                cast = np.ones_like(mask_temp).astype('uint8')
              
 
-            target = {ord('q'): gray, ord('w'):pixelated_gray  ,ord('e'): phosephene_gray, ord('r'): phosephene_gray_32, ord('1'): cv2.cvtColor(rgb_480 , cv2.COLOR_BGR2GRAY),
-                      ord('a'): depth, ord('s'): pixelated_depth , ord('d'): phosephene_depth, ord('f'): phosephene_depth_32, 
-                      ord('z'): canny, ord('x'): pixelated_canny, ord('c'): phosephene_canny, ord('v'): phosephene_canny_32
+            target = {ord('q'): gray*cast , ord('w'):pixelated_gray*cast   ,ord('e'): phosephene_gray*cast , ord('r'): phosephene_gray_32*cast , ord('1'): cv2.cvtColor(rgb_480 , cv2.COLOR_BGR2GRAY),
+                      ord('a'): depth*cast , ord('s'): pixelated_depth*cast  , ord('d'): phosephene_depth*cast , ord('f'): phosephene_depth_32*cast , 
+                      ord('z'): canny*cast , ord('x'): pixelated_canny*cast , ord('c'): phosephene_canny*cast , ord('v'): phosephene_canny_32*cast 
              }
             
+            if key_press not in target.keys(): # If you press another keys 
+                key_press = ord('1')
 
 
             zero_pad = np.pad(target[key_press], [(0,), (80,)], mode='constant')  # (480, 480) -> (480, 640) for showing in unity
