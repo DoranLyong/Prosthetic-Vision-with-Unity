@@ -1,4 +1,4 @@
-# Prosthetic_Vision_with_Unity
+# Prosthetic Vision with Unity
 
 This repository is based on [Prosthetic-Vision-Render](https://github.com/DoranLyong/Prosthetic-Vision-Render) and [TCP-tutorial](https://github.com/DoranLyong/TCP_tutorial/tree/master/Python_Unity_imageStream(ver2)).
 
